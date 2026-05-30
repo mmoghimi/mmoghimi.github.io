@@ -1,0 +1,876 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hello World</title>
+  <style>
+    :root {
+      --light-square: #e8f5e9;
+      --dark-square: #2e7d32;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 20px;
+      padding: 20px 12px 24px;
+      font-family: Georgia, "Times New Roman", serif;
+      background: #f7f4ef;
+    }
+
+    .controls {
+      order: 4;
+      width: min(90vmin, 480px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .toggle {
+      position: relative;
+      width: 52px;
+      height: 30px;
+      display: inline-block;
+    }
+
+    .toggle input {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      inset: 0;
+      border-radius: 999px;
+      background: #9e9e9e;
+      transition: background 160ms ease;
+      cursor: pointer;
+    }
+
+    .slider::before {
+      content: "";
+      position: absolute;
+      left: 4px;
+      top: 4px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #fff;
+      transition: transform 160ms ease;
+    }
+
+    .toggle input:checked + .slider {
+      background: #2e7d32;
+    }
+
+    .toggle input:checked + .slider::before {
+      transform: translateX(22px);
+    }
+
+    .refresh-label {
+      font-size: clamp(1rem, 2.3vw, 1.1rem);
+      color: #204120;
+    }
+
+    .countdown {
+      min-width: 7ch;
+      font-size: clamp(0.95rem, 2vw, 1.05rem);
+      color: #1f3d1f;
+      text-align: center;
+    }
+
+    .rules-panel {
+      order: 5;
+      width: min(90vmin, 480px);
+      background: #ffffff;
+      border: 1px solid #d7d7d7;
+      border-radius: 8px;
+      padding: 10px 12px;
+      box-sizing: border-box;
+    }
+
+    #white-points {
+      order: 3;
+    }
+
+    .rules-list {
+      margin: 0;
+      padding-left: 20px;
+      font-size: clamp(0.82rem, 1.9vw, 0.95rem);
+      line-height: 1.35;
+      color: #2d2d2d;
+    }
+
+    .read-button {
+      margin-top: 10px;
+      width: 100%;
+      border: 0;
+      border-radius: 6px;
+      padding: 10px 12px;
+      background: #2e7d32;
+      color: #fff;
+      font-size: clamp(0.9rem, 2vw, 1rem);
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .read-button:disabled {
+      background: #9e9e9e;
+      cursor: default;
+    }
+
+    .top-timers {
+      width: min(94vmin, 640px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: #000;
+      font-size: clamp(1.4rem, 5vw, 2.4rem);
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .songs-button {
+      border: 0;
+      border-radius: 8px;
+      padding: 8px 12px;
+      background: #d32f2f;
+      color: #fff;
+      font-size: clamp(0.85rem, 1.9vw, 0.95rem);
+      font-weight: 700;
+      cursor: pointer;
+      text-transform: lowercase;
+    }
+
+    .status {
+      width: min(94vmin, 640px);
+      text-align: center;
+      min-height: 1.4em;
+      font-size: clamp(1rem, 2.3vw, 1.2rem);
+      color: #5d4037;
+      font-weight: 700;
+    }
+
+    .team-points {
+      width: min(90vmin, 480px);
+      text-align: center;
+      font-size: clamp(1.05rem, 2.7vw, 1.3rem);
+      font-weight: 700;
+    }
+
+    .points-positive {
+      color: #1b5e20;
+    }
+
+    .points-negative {
+      color: #b71c1c;
+    }
+
+    .points-neutral {
+      color: #37474f;
+    }
+
+    .board-wrap {
+      position: relative;
+      width: min(90vmin, 480px);
+      aspect-ratio: 1;
+    }
+
+    .board-area {
+      --label-size: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .bottom-letters {
+      width: min(90vmin, 480px);
+      margin-left: var(--label-size);
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+    }
+
+    .bottom-letters span {
+      display: grid;
+      place-items: center;
+      font-size: clamp(0.7rem, 1.6vw, 0.85rem);
+      font-weight: 700;
+      color: #2f2f2f;
+    }
+
+    .board-row {
+      display: flex;
+      align-items: stretch;
+    }
+
+    .left-letters {
+      width: var(--label-size);
+      display: grid;
+      grid-template-rows: repeat(8, 1fr);
+    }
+
+    .left-letters span {
+      display: grid;
+      place-items: center;
+      font-size: clamp(0.7rem, 1.6vw, 0.85rem);
+      font-weight: 700;
+      color: #2f2f2f;
+    }
+
+    .board {
+      width: 100%;
+      aspect-ratio: 1;
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      grid-template-rows: repeat(8, 1fr);
+      border: 8px solid #3d2b1f;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+    }
+
+    .square {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      font-size: clamp(1.6rem, 6.8vmin, 3rem);
+      line-height: 1;
+      user-select: none;
+      cursor: pointer;
+    }
+
+    .square.selected {
+      outline: 3px solid #ffeb3b;
+      outline-offset: -3px;
+    }
+
+    .square.legal-target {
+      box-shadow: inset 0 0 0 3px rgba(30, 136, 229, 0.95);
+    }
+
+    .light {
+      background: var(--light-square);
+    }
+
+    .dark {
+      background: var(--dark-square);
+    }
+
+    .piece-black {
+      color: #111;
+    }
+
+    .piece-white {
+      color: #f8f8f8;
+      text-shadow: none;
+      -webkit-text-stroke: 1px #111;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="top-timers">
+    <span id="white-timer">White 5:00</span>
+    <button id="songs-btn" class="songs-button" type="button">songs</button>
+    <span id="black-timer">Black 5:00</span>
+  </div>
+  <audio id="mario-song" preload="auto" src="super-mario-bros-theme.mp3"></audio>
+  <div id="status" class="status"></div>
+  <div id="black-points" class="team-points points-neutral">Black points: 0</div>
+  <div class="board-area">
+    <div class="board-row">
+      <div class="left-letters" aria-hidden="true">
+        <span>8</span><span>7</span><span>6</span><span>5</span><span>4</span><span>3</span><span>2</span><span>1</span>
+      </div>
+      <div id="board-wrap" class="board-wrap">
+    <div class="board" aria-label="Chessboard">
+    <div class="square light piece-black">♜</div><div class="square dark piece-black">♞</div><div class="square light piece-black">♝</div><div class="square dark piece-black">♛</div><div class="square light piece-black">♚</div><div class="square dark piece-black">♝</div><div class="square light piece-black">♞</div><div class="square dark piece-black">♜</div>
+    <div class="square dark"></div><div class="square light"></div><div class="square dark"></div><div class="square light"></div><div class="square dark"></div><div class="square light"></div><div class="square dark"></div><div class="square light"></div>
+    <div class="square light"></div><div class="square dark"></div><div class="square light"></div><div class="square dark"></div><div class="square light"></div><div class="square dark"></div><div class="square light"></div><div class="square dark"></div>
+    <div class="square dark"></div><div class="square light"></div><div class="square dark"></div><div class="square light"></div><div class="square dark"></div><div class="square light"></div><div class="square dark"></div><div class="square light"></div>
+    <div class="square light"></div><div class="square dark"></div><div class="square light"></div><div class="square dark"></div><div class="square light"></div><div class="square dark"></div><div class="square light"></div><div class="square dark"></div>
+    <div class="square dark"></div><div class="square light"></div><div class="square dark"></div><div class="square light"></div><div class="square dark"></div><div class="square light"></div><div class="square dark"></div><div class="square light"></div>
+    <div class="square light"></div><div class="square dark"></div><div class="square light"></div><div class="square dark"></div><div class="square light"></div><div class="square dark"></div><div class="square light"></div><div class="square dark"></div>
+    <div class="square dark piece-white">♜</div><div class="square light piece-white">♞</div><div class="square dark piece-white">♝</div><div class="square light piece-white">♛</div><div class="square dark piece-white">♚</div><div class="square light piece-white">♝</div><div class="square dark piece-white">♞</div><div class="square light piece-white">♜</div>
+    </div>
+      </div>
+    </div>
+    <div class="bottom-letters" aria-hidden="true">
+      <span>a</span><span>b</span><span>c</span><span>d</span><span>e</span><span>f</span><span>g</span><span>h</span>
+    </div>
+  </div>
+  <div class="controls">
+    <label class="toggle" aria-label="Auto refresh every five seconds">
+      <input id="auto-refresh-toggle" type="checkbox">
+      <span class="slider"></span>
+    </label>
+    <span class="refresh-label">Refresh every 5 seconds</span>
+    <span id="countdown" class="countdown">Off</span>
+  </div>
+  <div class="rules-panel">
+    <ul class="rules-list">
+      <li>Each player has 5:00 on the clock; if your time reaches 0:00 and the game hasn't ended, you lose.</li>
+      <li>Capture at least 6 enemy pieces to win.</li>
+      <li>If a king is captured, the player with no king is forced to -13 points and loses.</li>
+      <li>Points: rook 3, knight 4, bishop 3, queen 8: king is instant win.</li>
+      <li>If your score drops to -13 or lower, you lose.</li>
+    </ul>
+    <button id="read-rules-btn" class="read-button" type="button">Read</button>
+  </div>
+  <div id="white-points" class="team-points points-neutral">White points: 0</div>
+  <script>
+    const boardEl = document.querySelector(".board");
+    const refreshToggle = document.getElementById("auto-refresh-toggle");
+    const countdownEl = document.getElementById("countdown");
+    const whiteTimerEl = document.getElementById("white-timer");
+    const blackTimerEl = document.getElementById("black-timer");
+    const songsBtn = document.getElementById("songs-btn");
+    const marioSongEl = document.getElementById("mario-song");
+    const statusEl = document.getElementById("status");
+    const whitePointsEl = document.getElementById("white-points");
+    const blackPointsEl = document.getElementById("black-points");
+    const readRulesBtn = document.getElementById("read-rules-btn");
+    const storageKey = "autoRefreshEveryFiveSeconds";
+    const refreshIntervalSeconds = 5;
+    const gameStartSeconds = 5 * 60;
+    const captureGoal = 6;
+    const minusLossThreshold = -13;
+    let tickTimer = null;
+    let secondsLeft = refreshIntervalSeconds;
+    let autoRefreshPausedForMove = false;
+    let gameClockTimer = null;
+    let lastClockMs = performance.now();
+    let gameStarted = false;
+
+    function safeSaveEnabled(enabled) {
+      try {
+        localStorage.setItem(storageKey, enabled ? "1" : "0");
+      } catch (error) {
+        // Ignore storage errors so refresh still works.
+      }
+    }
+
+    function safeLoadEnabled() {
+      try {
+        return localStorage.getItem(storageKey) === "1";
+      } catch (error) {
+        return false;
+      }
+    }
+
+    function updateCountdownText() {
+      if (!refreshToggle.checked) {
+        countdownEl.textContent = "Off";
+        return;
+      }
+      countdownEl.textContent = `${secondsLeft}s`;
+    }
+
+    function stopAutoRefresh() {
+      if (tickTimer !== null) {
+        clearInterval(tickTimer);
+        tickTimer = null;
+      }
+      secondsLeft = refreshIntervalSeconds;
+      updateCountdownText();
+    }
+
+    function refreshPage() {
+      const nextUrl = new URL(window.location.href);
+      nextUrl.searchParams.set("r", Date.now().toString());
+      window.location.href = nextUrl.toString();
+    }
+
+    function startAutoRefresh() {
+      stopAutoRefresh();
+      secondsLeft = refreshIntervalSeconds;
+      updateCountdownText();
+      tickTimer = setInterval(() => {
+        secondsLeft -= 1;
+        if (secondsLeft <= 0) {
+          refreshPage();
+          return;
+        }
+        updateCountdownText();
+      }, 1000);
+    }
+
+    function setAutoRefresh(enabled) {
+      refreshToggle.checked = enabled;
+      if (enabled) {
+        startAutoRefresh();
+      } else {
+        stopAutoRefresh();
+      }
+      safeSaveEnabled(enabled);
+    }
+
+    refreshToggle.addEventListener("change", () => {
+      setAutoRefresh(refreshToggle.checked);
+    });
+
+    songsBtn.addEventListener("click", async () => {
+      try {
+        marioSongEl.currentTime = 0;
+        await marioSongEl.play();
+      } catch (error) {
+        statusEl.textContent = "Add super-mario-bros-theme.mp3 in this folder to play songs.";
+      }
+    });
+
+    const savedState = safeLoadEnabled();
+    setAutoRefresh(savedState);
+
+    const squares = Array.from(boardEl.querySelectorAll(".square"));
+    const pieceTypeBySymbol = {
+      "♟": "pawn",
+      "♙": "pawn",
+      "♜": "rook",
+      "♖": "rook",
+      "♞": "knight",
+      "♘": "knight",
+      "♝": "bishop",
+      "♗": "bishop",
+      "♛": "queen",
+      "♕": "queen",
+      "♚": "king",
+      "♔": "king"
+    };
+
+    const unicodePieceTypeBySymbol = {
+      "♟": "pawn",
+      "♙": "pawn",
+      "♜": "rook",
+      "♖": "rook",
+      "♞": "knight",
+      "♘": "knight",
+      "♝": "bishop",
+      "♗": "bishop",
+      "♛": "queen",
+      "♕": "queen",
+      "♚": "king",
+      "♔": "king"
+    };
+    const piecePoints = {
+      pawn: 1,
+      rook: 3,
+      knight: 4,
+      bishop: 3,
+      queen: 8,
+      king: 0
+    };
+
+    let currentTurn = "white";
+    let selectedSquare = null;
+    let legalTargets = [];
+    let gameOver = false;
+    const capturedPiecesByTeam = { white: 0, black: 0 };
+    const capturedPointsByTeam = { white: 0, black: 0 };
+    const remainingClockByTeam = { white: gameStartSeconds, black: gameStartSeconds };
+
+    function formatClock(totalSeconds) {
+      const clamped = Math.max(0, Math.floor(totalSeconds));
+      const minutes = Math.floor(clamped / 60);
+      const seconds = clamped % 60;
+      return `${minutes}:${String(seconds).padStart(2, "0")}`;
+    }
+
+    function scoreDiffFor(teamColor) {
+      const enemy = teamColor === "white" ? "black" : "white";
+      return capturedPointsByTeam[teamColor] - capturedPointsByTeam[enemy];
+    }
+
+    function updatePointsDisplay() {
+      const whiteDiff = scoreDiffFor("white");
+      const blackDiff = scoreDiffFor("black");
+
+      whitePointsEl.textContent = `White points: ${whiteDiff > 0 ? "+" : ""}${whiteDiff}`;
+      blackPointsEl.textContent = `Black points: ${blackDiff > 0 ? "+" : ""}${blackDiff}`;
+
+      whitePointsEl.classList.remove("points-positive", "points-negative", "points-neutral");
+      blackPointsEl.classList.remove("points-positive", "points-negative", "points-neutral");
+
+      whitePointsEl.classList.add(whiteDiff > 0 ? "points-positive" : whiteDiff < 0 ? "points-negative" : "points-neutral");
+      blackPointsEl.classList.add(blackDiff > 0 ? "points-positive" : blackDiff < 0 ? "points-negative" : "points-neutral");
+    }
+
+    function updateTimerDisplay() {
+      whiteTimerEl.textContent = `White ${formatClock(remainingClockByTeam.white)}`;
+      blackTimerEl.textContent = `Black ${formatClock(remainingClockByTeam.black)}`;
+    }
+
+    function updateTurnStatus() {
+      if (!gameStarted) {
+        statusEl.textContent = "Read the rules, then press Read to start.";
+        return;
+      }
+      if (!gameOver) {
+        statusEl.textContent = `${currentTurn === "white" ? "White" : "Black"} to move`;
+      }
+    }
+
+    function stopGameClock() {
+      if (gameClockTimer !== null) {
+        clearInterval(gameClockTimer);
+        gameClockTimer = null;
+      }
+    }
+
+    function finishGame(message) {
+      if (gameOver) {
+        return;
+      }
+      gameOver = true;
+      statusEl.textContent = message;
+      stopGameClock();
+      clearSelection();
+    }
+
+    function checkScoreLoss() {
+      if (scoreDiffFor("white") <= minusLossThreshold) {
+        finishGame("White loses by points.");
+        return true;
+      }
+      if (scoreDiffFor("black") <= minusLossThreshold) {
+        finishGame("Black loses by points.");
+        return true;
+      }
+      return false;
+    }
+
+    function tickGameClock() {
+      if (gameOver || !gameStarted) {
+        return;
+      }
+      const now = performance.now();
+      const elapsed = (now - lastClockMs) / 1000;
+      lastClockMs = now;
+
+      remainingClockByTeam[currentTurn] -= elapsed;
+      if (remainingClockByTeam[currentTurn] <= 0) {
+        remainingClockByTeam[currentTurn] = 0;
+        updateTimerDisplay();
+        const winner = currentTurn === "white" ? "Black" : "White";
+        finishGame(`${winner} wins on time.`);
+        return;
+      }
+
+      updateTimerDisplay();
+    }
+
+    function startGameClock() {
+      stopGameClock();
+      lastClockMs = performance.now();
+      gameClockTimer = setInterval(tickGameClock, 200);
+      updateTimerDisplay();
+    }
+
+    function isPieceSquare(square) {
+      return square.classList.contains("piece-black") || square.classList.contains("piece-white");
+    }
+
+    function getSquareIndex(square) {
+      return squares.indexOf(square);
+    }
+
+    function getSquareAt(row, col) {
+      if (row < 0 || row > 7 || col < 0 || col > 7) {
+        return null;
+      }
+      return squares[row * 8 + col];
+    }
+
+    function getPiece(square) {
+      if (!square || !isPieceSquare(square)) {
+        return null;
+      }
+      const symbol = square.textContent.trim();
+      const type = pieceTypeBySymbol[symbol] || unicodePieceTypeBySymbol[symbol];
+      if (!type) {
+        return null;
+      }
+      return {
+        color: square.classList.contains("piece-white") ? "white" : "black",
+        type,
+        symbol
+      };
+    }
+
+    function isEnemySquare(square, color) {
+      const piece = getPiece(square);
+      return piece && piece.color !== color;
+    }
+
+    function clearLegalTargets() {
+      for (const square of legalTargets) {
+        square.classList.remove("legal-target");
+      }
+      legalTargets = [];
+    }
+
+    function setLegalTargets(targets) {
+      clearLegalTargets();
+      legalTargets = targets;
+      for (const square of legalTargets) {
+        square.classList.add("legal-target");
+      }
+    }
+
+    function clearSelection() {
+      if (selectedSquare) {
+        selectedSquare.classList.remove("selected");
+        selectedSquare = null;
+      }
+      clearLegalTargets();
+      if (autoRefreshPausedForMove && refreshToggle.checked) {
+        autoRefreshPausedForMove = false;
+        startAutoRefresh();
+      }
+    }
+
+    function collectRayMoves(row, col, dRow, dCol, color, moves) {
+      let r = row + dRow;
+      let c = col + dCol;
+      while (true) {
+        const targetSquare = getSquareAt(r, c);
+        if (!targetSquare) {
+          break;
+        }
+        const targetPiece = getPiece(targetSquare);
+        if (!targetPiece) {
+          moves.push(targetSquare);
+        } else {
+          if (targetPiece.color !== color) {
+            moves.push(targetSquare);
+          }
+          break;
+        }
+        r += dRow;
+        c += dCol;
+      }
+    }
+
+    function getLegalMoves(square) {
+      const piece = getPiece(square);
+      if (!piece) {
+        return [];
+      }
+      const index = getSquareIndex(square);
+      if (index < 0) {
+        return [];
+      }
+
+      const row = Math.floor(index / 8);
+      const col = index % 8;
+      const moves = [];
+
+      if (piece.type === "pawn") {
+        const direction = piece.color === "white" ? -1 : 1;
+        const startRow = piece.color === "white" ? 6 : 1;
+        const oneStep = getSquareAt(row + direction, col);
+        if (oneStep && !getPiece(oneStep)) {
+          moves.push(oneStep);
+          const twoStep = getSquareAt(row + 2 * direction, col);
+          if (row === startRow && twoStep && !getPiece(twoStep)) {
+            moves.push(twoStep);
+          }
+        }
+        const captureLeft = getSquareAt(row + direction, col - 1);
+        const captureRight = getSquareAt(row + direction, col + 1);
+        if (captureLeft && isEnemySquare(captureLeft, piece.color)) {
+          moves.push(captureLeft);
+        }
+        if (captureRight && isEnemySquare(captureRight, piece.color)) {
+          moves.push(captureRight);
+        }
+      } else if (piece.type === "knight") {
+        const jumps = [
+          [-2, -1], [-2, 1], [-1, -2], [-1, 2],
+          [1, -2], [1, 2], [2, -1], [2, 1]
+        ];
+        for (const [dRow, dCol] of jumps) {
+          const target = getSquareAt(row + dRow, col + dCol);
+          if (!target) {
+            continue;
+          }
+          const targetPiece = getPiece(target);
+          if (!targetPiece || targetPiece.color !== piece.color) {
+            moves.push(target);
+          }
+        }
+      } else if (piece.type === "bishop") {
+        collectRayMoves(row, col, -1, -1, piece.color, moves);
+        collectRayMoves(row, col, -1, 1, piece.color, moves);
+        collectRayMoves(row, col, 1, -1, piece.color, moves);
+        collectRayMoves(row, col, 1, 1, piece.color, moves);
+      } else if (piece.type === "rook") {
+        collectRayMoves(row, col, -1, 0, piece.color, moves);
+        collectRayMoves(row, col, 1, 0, piece.color, moves);
+        collectRayMoves(row, col, 0, -1, piece.color, moves);
+        collectRayMoves(row, col, 0, 1, piece.color, moves);
+      } else if (piece.type === "queen") {
+        collectRayMoves(row, col, -1, -1, piece.color, moves);
+        collectRayMoves(row, col, -1, 1, piece.color, moves);
+        collectRayMoves(row, col, 1, -1, piece.color, moves);
+        collectRayMoves(row, col, 1, 1, piece.color, moves);
+        collectRayMoves(row, col, -1, 0, piece.color, moves);
+        collectRayMoves(row, col, 1, 0, piece.color, moves);
+        collectRayMoves(row, col, 0, -1, piece.color, moves);
+        collectRayMoves(row, col, 0, 1, piece.color, moves);
+      } else if (piece.type === "king") {
+        for (let dRow = -1; dRow <= 1; dRow += 1) {
+          for (let dCol = -1; dCol <= 1; dCol += 1) {
+            if (dRow === 0 && dCol === 0) {
+              continue;
+            }
+            const target = getSquareAt(row + dRow, col + dCol);
+            if (!target) {
+              continue;
+            }
+            const targetPiece = getPiece(target);
+            if (!targetPiece || targetPiece.color !== piece.color) {
+              moves.push(target);
+            }
+          }
+        }
+      }
+
+      return moves;
+    }
+
+    function movePiece(fromSquare, toSquare) {
+      const movingPiece = getPiece(fromSquare);
+      if (!movingPiece) {
+        return false;
+      }
+
+      const legalMoves = getLegalMoves(fromSquare);
+      if (!legalMoves.includes(toSquare)) {
+        return false;
+      }
+
+      const capturedPiece = getPiece(toSquare);
+
+      toSquare.textContent = fromSquare.textContent;
+      toSquare.classList.remove("piece-white", "piece-black");
+      toSquare.classList.add(movingPiece.color === "white" ? "piece-white" : "piece-black");
+
+      fromSquare.textContent = "";
+      fromSquare.classList.remove("piece-white", "piece-black");
+
+      const targetIndex = getSquareIndex(toSquare);
+      const targetRow = Math.floor(targetIndex / 8);
+      if (movingPiece.type === "pawn" && (targetRow === 0 || targetRow === 7)) {
+        toSquare.textContent = movingPiece.color === "white" ? "♛" : "♛";
+      }
+
+      if (capturedPiece) {
+        capturedPiecesByTeam[movingPiece.color] += 1;
+
+        const winnerName = movingPiece.color === "white" ? "White" : "Black";
+        if (capturedPiece.type === "king") {
+          const loserColor = capturedPiece.color;
+          const winnerColor = movingPiece.color;
+          capturedPointsByTeam[winnerColor] = capturedPointsByTeam[loserColor] + Math.abs(minusLossThreshold);
+          updatePointsDisplay();
+          finishGame(`${winnerName} wins by capturing the king.`);
+          return true;
+        }
+
+        capturedPointsByTeam[movingPiece.color] += piecePoints[capturedPiece.type] || 0;
+        updatePointsDisplay();
+
+        if (capturedPiecesByTeam[movingPiece.color] >= captureGoal) {
+          finishGame(`${winnerName} wins by capturing 6 pieces.`);
+          return true;
+        }
+        if (checkScoreLoss()) {
+          return true;
+        }
+      }
+
+      currentTurn = currentTurn === "white" ? "black" : "white";
+      lastClockMs = performance.now();
+      updateTurnStatus();
+      return true;
+    }
+
+    boardEl.addEventListener("click", (event) => {
+      if (gameOver || !gameStarted) {
+        return;
+      }
+
+      const target = event.target instanceof Element ? event.target : event.target.parentElement;
+      if (!target) {
+        return;
+      }
+
+      const square = target.closest(".square");
+      if (!square) {
+        return;
+      }
+
+      const clickedPiece = getPiece(square);
+
+      if (!selectedSquare) {
+        if (!clickedPiece || clickedPiece.color !== currentTurn) {
+          return;
+        }
+        if (refreshToggle.checked && tickTimer !== null) {
+          stopAutoRefresh();
+          autoRefreshPausedForMove = true;
+        }
+        selectedSquare = square;
+        selectedSquare.classList.add("selected");
+        setLegalTargets(getLegalMoves(selectedSquare));
+        return;
+      }
+
+      if (square === selectedSquare) {
+        clearSelection();
+        return;
+      }
+
+      if (clickedPiece && clickedPiece.color === currentTurn) {
+        selectedSquare.classList.remove("selected");
+        selectedSquare = square;
+        selectedSquare.classList.add("selected");
+        setLegalTargets(getLegalMoves(selectedSquare));
+        return;
+      }
+
+      const moved = movePiece(selectedSquare, square);
+      clearSelection();
+      if (!moved) {
+        updateTurnStatus();
+      }
+    });
+
+    readRulesBtn.addEventListener("click", () => {
+      if (gameStarted) {
+        return;
+      }
+      gameStarted = true;
+      readRulesBtn.disabled = true;
+      readRulesBtn.textContent = "Read";
+      lastClockMs = performance.now();
+      startGameClock();
+      updateTurnStatus();
+    });
+
+    updatePointsDisplay();
+    updateTimerDisplay();
+    updateTurnStatus();
+  </script>
+</body>
+</html>
